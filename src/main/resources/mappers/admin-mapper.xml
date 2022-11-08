@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 인소진 추가 관리자 맵퍼 -->
+<mapper namespace="Admin">
+	<resultMap type="Member" id="searchResultSet">
+		<id property="mid" column="MID" />
+		<result property="email" column="EMAIL" />
+		<result property="user_pwd" column="USER_PWD" />
+		<result property="user_name" column="USER_NAME" />
+		<result property="birthday" column="BIRTHDAY" />  
+		<result property="gender" column="GENDER" />
+		<result property="phone" column="PHONE" />
+		<result property="user_class" column="USER_CLASS" />
+		<result property="status" column="STATUS" />
+		<result property="login_class" column="LOGIN_CLASS" />
+		<result property="blacklist_status" column="BLACKLIST_CLASS" />
+		<result property="join_date" column="JOIN_DATE" />
+		<result property="withdraw_date" column="WITHDRAW_DATE" />
+		<result property="nickname" column="NICKNAME" />
+	</resultMap>  
+
+	<resultMap type="ReportHistory" id="searchBlackListSet">
+		<id property="rep_id" column="REP_ID" />
+		<result property="rid" column="RID" />
+		<result property="rep_userid" column="REP_USERID" />
+		<result property="rep_level" column="REP_LEVEL" />
+		<result property="rep_content" column="REP_CONTENT" />
+		<result property="treat_date" column="TREAT_DATE" />
+		<result property="reped_userid" column="REPED_USERID" />
+	</resultMap>
+
+	<resultMap type="BoardFile" id="searchBoardFileSet">
+		<id property="file_id" column="FILE_ID" />
+		<result property="board_id" column="BOARD_ID" />
+		<result property="origin_name" column="ORIGIN_NAME" />
+		<result property="edit_name" column="EDIT_NAME" />
+		<result property="file_src" column="FILE_SRC" />
+		<result property="file_date" column="FILE_DATE" />
+		<result property="file_level" column="FILE_LEVEL" />
+	</resultMap>
+	
+	<resultMap type="VisitHistory" id="visitListSet">
+		<id property="visit_id" column="VISIT_ID" />
+		<result property="visit_count" column="VISIT_COUNT"/>
+		<result property="visit_time" column="VISIT_TIME" />
+		<result property="visit_ip" column="VISIT_IP"/>
+	</resultMap>
+	<!-- 회원 전체 조회 인소진 -->
+	<select id="searchAll" parameterType="Search" resultMap="searchResultSet">
+		SELECT *
+		FROM MEMBER
+		WHERE
+		<choose>
+			<when test="searchCondition != null and searchCondition.equals('id')">
+				MID LIKE '%' || #{searchResult} || '%'
+			</when>
+			<when test="searchCondition != null and searchCondition.equals('name')">
+				USER_NAME LIKE '%' || #{searchResult} || '%'
+			</when>
+			<otherwise>
+				MID LIKE '%' || 'M' || '%'
+			</otherwise>
+		</choose>
+		ORDER BY SUBSTR(MID,2)*1
+	</select>
+
+	<!-- 일반 회원 조회 인소진 -->
+	<select id="searchBu" resultMap="searchResultSet">
+		SELECT *
+		FROM MEMBER
+		WHERE USER_CLASS='BUYER'
+		<choose>
+			<when test="searchCondition != null and searchCondition.equals('id')">
+				AND MID LIKE '%' || #{searchResult} || '%'
+			</when>
+			<when test="searchCondition != null and searchCondition.equals('name')">
+				AND USER_NAME LIKE '%' || #{searchResult} || '%'
+			</when>
+		</choose>
+		ORDER BY SUBSTR(MID,2)*1
+	</select>
+
+	<!-- 판매자 회원 조회 인소진 -->
+	<select id="searchSe" parameterType="Search" resultMap="searchResultSet">
+		SELECT *
+		FROM MEMBER
+		WHERE USER_CLASS='SELLER'
+		<choose>
+			<when test="searchCondition != null and searchCondition.equals('id')">
+				AND MID LIKE '%' || #{searchResult} || '%'
+			</when>
+			<when test="searchCondition != null and searchCondition.equals('name')">
+				AND USER_NAME LIKE '%' || #{searchResult} || '%'
+			</when>
+		</choose>
+		ORDER BY SUBSTR(MID,2)*1
+	</select>
+
+	<!-- 일반 회원 조회 카운트 결과 인소진 -->
+	<select id="countAll" parameterType="Search" resultType="_int">
+		SELECT COUNT(*)
+		FROM MEMBER
+		<choose>
+			<when test="searchCondition != null and searchCondition.equals('id')">
+				WHERE MID LIKE '%' || #{searchResult} || '%'
+			</when>
+			<when test="searchCondition != null and searchCondition.equals('name')">
+				WHERE USER_NAME LIKE '%' || #{searchResult} || '%'
+			</when>
+		</choose>
+		ORDER BY SUBSTR(MID,2)*1
+	</select>
+
+	<!-- 일반 회원 조회 카운트 결과 인소진 -->
+	<select id="countBu" parameterType="Search" resultType="_int">
+		SELECT COUNT(*)
+		FROM MEMBER
+		WHERE USER_CLASS='BUYER'
+		<choose>
+			<when test="searchCondition != null and searchCondition.equals('id')">
+				AND MID LIKE '%' || #{searchResult} || '%'
+			</when>
+			<when test="searchCondition != null and searchCondition.equals('name')">
+				AND USER_NAME LIKE '%' || #{searchResult} || '%'
+			</when>
+		</choose>
+		ORDER BY SUBSTR(MID,2)*1
+	</select>
+
+	<!-- 판매자 회원 조회 카운트 결과 인소진 -->
+	<select id="countSe" parameterType="Search" resultType="_int">
+		SELECT COUNT(*)
+		FROM MEMBER
+		WHERE USER_CLASS='SELLER'
+		<choose>
+			<when test="searchCondition != null and searchCondition.equals('id')">
+				AND MID LIKE '%' || #{searchResult} || '%'
+			</when>
+			<when test="searchCondition != null and searchCondition.equals('name')">
+				AND USER_NAME LIKE '%' || #{searchResult} || '%'
+			</when>
+		</choose>
+		ORDER BY SUBSTR(MID,2)*1
+	</select>
+
+	<!-- 블랙리스트 이력 조회 인소진 -->
+	<select id="searchBlack" parameterType="Search" resultMap="searchBlackListSet">
+		SELECT *
+		FROM REPORT_HISTORY
+		<choose>
+			<when test="searchCondition != null and searchCondition.equals('repedId')">
+				WHERE REPED_USERID LIKE '%' || #{searchResult} || '%'
+			</when>
+		</choose>
+		ORDER BY SUBSTR(REP_ID,2)
+	</select>
+
+	<!-- 블랙리스트 회원 조회 카운트 인소진 -->
+	<select id="countBl" parameterType="Search" resultType="_int">
+		SELECT COUNT(*)
+		FROM REPORT_HISTORY
+		<choose>
+			<when test="searchCondition != null and searchCondition.equals('repedId')">
+				WHERE REPED_USERID LIKE '%' || #{searchResult} || '%'
+			</when>
+		</choose>
+	</select>
+
+	<!-- 메인 슬라이드 사진 파일 추가 -->
+	<insert id="insertFile" parameterType="BoardFile">
+		INSERT INTO BOARD_FILE
+		<if test="file_level eq 100">
+		VALUES('BF10000',#{board_id},#{origin_name},#{edit_name},#{file_src},SYSDATE,#{file_level})
+		</if>
+		<if test="file_level eq 200">
+		VALUES('BF10001',#{board_id},#{origin_name},#{edit_name},#{file_src},SYSDATE,#{file_level})
+		</if>
+		<if test="file_level eq 300">
+		VALUES('BF10002',#{board_id},#{origin_name},#{edit_name},#{file_src},SYSDATE,#{file_level})
+		</if>
+		<if test="file_level eq 400">
+		VALUES('BF10003',#{board_id},#{origin_name},#{edit_name},#{file_src},SYSDATE,#{file_level})
+		</if>
+	</insert>
+
+	<!-- 슬라이드 사진 파일 수정 -->
+	<update id="updateFile">
+		UPDATE BOARD_FILE
+		SET FILE_LEVEL=0
+		<choose>
+			<when test="file_level == 100">
+				WHERE FILE_LEVEL=100
+			</when>
+			<when test="file_level == 200">
+				WHERE FILE_LEVEL=200
+			</when>
+			<when test="file_level == 300">
+				WHERE FILE_LEVEL=300
+			</when>
+			<when test="file_level == 400">
+				WHERE FILE_LEVEL=400
+			</when>
+		</choose>
+
+	</update>
+
+	<!-- 슬라이드 사진 삭제 -->
+	<delete id="deleteFile">
+		DELETE BOARD_FILE
+		WHERE FILE_LEVEL=0
+	</delete>
+
+	<select id="selectFile" resultMap="searchBoardFileSet">
+		SELECT *
+		FROM BOARD_FILE
+		WHERE
+		FILE_LEVEL=100 OR FILE_LEVEL=200 OR FILE_LEVEL=300 OR FILE_LEVEL = 400
+		ORDER BY FILE_LEVEL
+	</select>
+	
+	<select id="selectVisit" parameterType="VisitHistory" resultType="_int">
+		SELECT COUNT(*)
+		FROM VISIT_HISTORY
+		WHERE VISIT_IP = #{visit_ip}
+	</select>
+	
+	<insert id="insertVisit" parameterType="VisitHistory">
+		INSERT INTO VISIT_HISTORY
+		VALUES(VISIT_HISTORY_VISIT_ID.NEXTVAL,#{visit_count},#{visit_time},#{visit_ip})
+	</insert>
+	
+	<select id="selectVisitList" resultMap="visitListSet">
+		SELECT *
+		FROM VISIT_HISTORY
+		ORDER BY VISIT_ID
+	</select>
+	
+
+	<delete id="deleteVisit" parameterType="date">
+		DELETE VISIT_HISTORY
+
+		WHERE VISIT_TIME = #{lastTime}
+	</delete>
+	<insert id="insertVcount" parameterType="VisitHistory">
+		INSERT INTO VISIT_HISTORY
+		VALUES(VISIT_HISTORY_VISIT_ID.NEXTVAL,#{visit_count},#{visit_time}, 'record')
+	</insert>
+	
+	<!-- <insert id="insertgar" parameterType="date">
+		INSERT INTO VISIT
+		VALUES('gValue',#{t})
+	</insert> -->
+	
+	<select id="selectTime" resultType="String">
+		SELECT TO_CHAR(SYSDATE,'YYYYMMDD')
+		FROM DUAL
+	</select>
+	
+	<select id="countVisit" parameterType="map" resultType="_int">
+		SELECT VISIT_COUNT
+		FROM VISIT_HISTORY
+		<if test="count lt 10">
+			WHERE VISIT_TIME LIKE '18/0' || #{count} || '%'
+		</if>
+		<if test="count gt 9">
+			WHERE VISIT_TIME LIKE '18/' || #{count} || '%'
+		</if>
+	</select>
+	
+	<select id="countMember" parameterType="map" resultType="_int">
+		SELECT COUNT(*)
+		FROM MEMBER
+		<if test="countm lt 10">
+			WHERE JOIN_DATE LIKE '18/0' || #{countm} || '%'
+		</if>
+		<if test="countm gt 9">
+			WHERE JOIN_DATE LIKE '18/' || #{countm} || '%'
+		</if>
+	</select>
+	
+	<select id="countB" resultType="_int">
+		SELECT COUNT(*)
+		FROM MEMBER
+		WHERE USER_CLASS = 'BUYER'
+	</select>
+	
+	<select id="countS" resultType="_int">
+		SELECT COUNT(*)
+		FROM MEMBER
+		WHERE USER_CLASS = 'SELLER'
+	</select>
+	
+	<select id="countBook" parameterType="map" resultType="_int">
+		SELECT COUNT(*)
+		FROM RESERVATION
+		<if test="countb lt 10">
+			WHERE RESERVATION_DATE LIKE '18/0' || #{countb} || '%'
+		</if>
+		<if test="countb gt 9">
+			WHERE RESERVATION_DATE LIKE '18/' || #{countb} || '%'
+		</if>
+	</select>
+	
+</mapper>

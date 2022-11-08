@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="BookingHistory">
+	<resultMap type="BookingHistory" id="bookingHistoryResultSet">
+		<id property="reservation_id" column="RESERVATION_ID" />
+		<result property="mid" column="mid" />
+		<result property="approval_number" column="APPROVAL_NUMBER"/>
+		<result property="movie_title" column="MOVIE_TITLE" />
+		<result property="theater_name" column="THEATER_NAME" />
+		<result property="movieroom_name" column="MOVIEROOM_NAME" />
+		<result property="seat_row" column="SEAT_ROW" />
+		<result property="seat_column" column="SEAT_column" />
+		<result property="reservation_date" column="reservation_date" />
+		<result property="turning_day" column="TURNING_DAY" />
+		<result property="reservation_status" column="RESERVATION_STATUS" />  
+		<result property="movie_id" column="MOVIE_ID" />
+	</resultMap>
+	
+	<select id="selectBookingHist" resultMap="bookingHistoryResultSet">
+	SELECT PA.APPROVAL_NUMBER, M.MOVIE_TITLE, TH.THEATER_NAME, MR.MOVIEROOM_NAME,
+        R.RESERVATION_DATE, T.TURNING_DAY, P.MOVIE_ID,
+        CASE WHEN R.RESERVATION_STATUS = '확인'
+        AND SYSDATE > T.START_TIME
+        THEN '취소불가_리뷰가능'
+        ELSE '취소가능_리뷰불가'
+        END AS STATUS,
+        LISTAGG(S.SEAT_ROW, ', ') WITHIN GROUP (ORDER BY R.RESERVATION_DATE) AS SEATS
+    FROM RESERVATION R
+    JOIN PAY PA ON (R.RESERVATION_ID = PA.RESERVATION_ID)
+    JOIN SEAT S ON (R.SEAT_ID = S.SEAT_ID)
+    JOIN TURNING T ON (S.TURNING_ID = T.TURNING_ID)
+    JOIN PLAY P ON (T.PLAY_ID = P.PLAY_ID)
+    JOIN MOVIE M ON (P.MOVIE_ID = M.MOVIE_ID)
+    JOIN MOVIEROOM MR ON (T.MOVIEROOM_ID = MR.MOVIEROOM_ID)
+    JOIN THEATER TH ON (MR.THEATER_ID = TH.THEATER_ID)
+    WHERE R.RESERVATION_STATUS != '취소'
+	AND R.MID = #{ mid }
+    GROUP BY PA.APPROVAL_NUMBER, M.MOVIE_TITLE, TH.THEATER_NAME, MR.MOVIEROOM_NAME, R.RESERVATION_DATE, T.TURNING_DAY, R.RESERVATION_STATUS, T.START_TIME, P.MOVIE_ID
+	</select>
+	
+	
+</mapper>

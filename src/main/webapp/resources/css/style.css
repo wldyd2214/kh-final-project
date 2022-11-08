@@ -1,0 +1,147 @@
+@import url(http://fonts.googleapis.com/css?family=Open+Sans) !important;
+
+.ray{
+	magin-top:-300px !important;
+	margin-left:-150px !important;
+	
+}
+* {
+  margin :0 ;
+  padding:0 ;
+}
+
+.wrapper {
+  position  :relative !important;
+  margin-top:-20px !important;
+  width :500px !important;
+  height:120px !important;
+  overflow:hidden !important;
+  background:yellow;
+}
+
+.ray {
+  -webkit-animation:rotate 2s ease-in-out !important;
+     -moz-animation:rotate 2s ease-in-out !important;
+      -ms-animation:rotate 2s ease-in-out !important;
+          animation:rotate 2s ease-in-out !important;
+  
+  -webkit-animation-fill-mode:forwards !important;
+     -moz-animation-fill-mode:forwards !important;
+      -ms-animation-fill-mode:forwards !important;
+          animation-fill-mode:forwards !important;
+}
+
+@-webkit-keyframes rotate {
+  to {-webkit-transform:rotate(-45deg);}
+}
+
+@-moz-keyframes rotate {
+  to {-moz-transform:rotate(-45deg);}
+}
+
+@-ms-keyframes rotate {
+  to {-ms-transform:rotate(-45deg);}
+}
+
+@keyframes rotate {
+  to {transform:rotate(-45deg);}
+}
+/* #5F4B8B */
+.ray:nth-child(1) {
+  position:absolute !important;
+  width : 30px !important;
+  height: 30px !important;   
+  bottom:-35px !important;
+  left  :215px !important;
+  border-radius:50% !important;
+  border-top   :20px solid #191D4B !important;
+  border-right :20px solid #191D4B !important;
+  border-bottom:20px solid #fff !important;
+  border-left  :20px solid #fff !important;
+  /* #191D4B */
+  -webkit-transform:rotate(135deg) !important;
+     -moz-transform:rotate(135deg) !important;
+      -ms-transform:rotate(135deg) !important;
+          transform:rotate(135deg) !important;
+}
+
+.ray:nth-child(2) {
+  position:absolute !important;
+  width : 70px !important;
+  height: 70px !important;   
+  bottom:-55px !important;
+  left  :195px !important;
+  border-radius:50% !important;
+  border-top   :20px solid #C0CADD !important;
+  border-right :20px solid #C0CADD !important;
+  border-bottom:20px solid #fff !important;
+  border-left  :20px solid #fff !important;
+  /* #C0CADD */
+  -webkit-transform:rotate(135deg) !important;
+     -moz-transform:rotate(135deg) !important;
+      -ms-transform:rotate(135deg) !important;
+          transform:rotate(135deg) !important;  
+  
+  -webkit-animation-delay:.1s !important;
+     -moz-animation-delay:.1s !important;
+      -ms-animation-delay:.1s !important;
+          animation-delay:.1s !important;
+}
+
+.ray:nth-child(3) {
+  position:absolute !important;
+  width :110px !important;
+  height:110px !important;   
+  bottom:-75px !important;
+  left  :175px !important;
+  border-radius:50% !important;
+  border-top   :20px solid #F3F3F4 !important;
+  border-right :20px solid #F3F3F4 !important;
+  border-bottom:20px solid #fff !important;
+  border-left  :20px solid #fff !important;
+  
+  -webkit-transform:rotate(135deg) !important;
+     -moz-transform:rotate(135deg) !important;
+      -ms-transform:rotate(135deg) !important;
+          transform:rotate(135deg) !important;  
+  /* #F3F3F4 */
+  -webkit-animation-delay:.2s !important;
+     -moz-animation-delay:.2s !important;
+      -ms-animation-delay:.2s !important;
+          animation-delay:.2s !important;
+}
+
+.ray:nth-child(4) {
+  position:absolute !important;
+  width :150px !important;
+  height:150px !important;   
+  bottom:-95px !important;
+  left  :155px !important;
+  border-radius:50% !important;
+  border-top   :20px solid #9ABC96 !important;
+  border-right :20px solid #9ABC96 !important;
+  border-bottom:20px solid #fff !important;
+  border-left  :20px solid #fff !important;
+  /* #9ABC96 */
+  -webkit-transform:rotate(135deg) !important;
+     -moz-transform:rotate(135deg) !important;
+      -ms-transform:rotate(135deg) !important;
+          transform:rotate(135deg) !important;  
+  
+  -webkit-animation-delay:.3s !important;
+     -moz-animation-delay:.3s !important;
+      -ms-animation-delay:.3s !important;
+          animation-delay:.3s !important;
+}
+
+
+
+span {
+  position:relative;  
+  display :block;
+  color:#fff;
+  font :bold 16px 'Open Sans', sans-serif;
+  top  :5px;  
+  line-height:20px;
+  z-index:1;
+}

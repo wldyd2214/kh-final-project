@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Area">
+	<!-- 박지용 지역 리스트를 ResultSet -->
+	<resultMap type="Area" id="areaResultSet">
+		<id property="area_id" column="AREA_ID"/>
+		<result property="area_name" column="AREA_NAME"/>
+		<result property="area_level" column="AREA_LEVEL"/>
+		<result property="area_parents" column="AREA_PARENTS"/>
+	</resultMap>
+	  
+	<select id="selectAreaList" resultMap="areaResultSet" parameterType="Area">
+		SELECT DISTINCT AREA.AREA_ID, AREA.AREA_PARENTS, AREA.AREA_NAME 
+		FROM TURNING, PLAY, MOVIE, MOVIEROOM, THEATER, AREA
+		WHERE PLAY.PLAY_ID = TURNING.PLAY_ID 
+		AND MOVIE.MOVIE_ID = PLAY.MOVIE_ID 
+		AND THEATER.THEATER_ID = MOVIEROOM.THEATER_ID
+		AND AREA.AREA_ID = THEATER.AREA_ID
+		AND PLAY_STATUS = 'Y' 
+		AND MOVIE.MOVIE_ID = #{movie_id}
+	</select>
+	
+	
+</mapper>
+
+

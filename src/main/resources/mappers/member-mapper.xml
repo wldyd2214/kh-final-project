@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Member">  
+	<resultMap type="Member" id="memberResultSet">    
+   
+   
+		<id property="mid" column="MID"/>
+		<result property="email" column="EMAIL"/>
+		<result property="user_pwd" column="USER_PWD"/>
+		<result property="user_name" column="USER_NAME"/>
+		<result property="birthday" column="BIRTHDAY"/>
+		<result property="gender" column="GENDER"/>
+		<result property="phone" column="PHONE"/>  
+		<result property="user_class" column="USER_CLASS"/>
+		<result property="status" column="STATUS"/>
+		<result property="login_class" column="LOGIN_CLASS"/>
+		<result property="blacklist_status" column="BLACKLIST_STATUS"/>
+		<result property="join_date" column="JOIN_DATE"/>
+		<result property="withdraw_date" column="WITHDRAW_DATE"/>
+		<result property="nickname" column="NICKNAME"/>
+		<result property="refreshToken" column="REFRESHTOKEN"/>
+
+	</resultMap>
+	
+	 <!--  로그인 정보 조회용 쿼리문  / 고성희 -->
+	<select id="loginCheck" resultMap="memberResultSet" parameterType="Member">
+		SELECT * 
+		FROM MEMBER 
+		WHERE EMAIL = #{email} 
+		AND USER_PWD = #{user_pwd} 
+		AND STATUS = 'N'
+	</select>
+	
+	<!-- 회원 가입용 메소드 / 황이주 -->
+	<insert id="insertMember" parameterType="Member">
+		INSERT INTO MEMBER
+		VALUES('M' || MEMBER_MID.NEXTVAL, #{email}, #{user_pwd}, #{user_name},
+				#{birthday}, #{gender}, #{phone}, 'BUYER', DEFAULT,
+				'GENERAL', 'N', SYSDATE, NULL,
+				#{nickname}, NULL)
+	</insert>
+	
+	<!-- 암호화된 비밀번호 조회용 메소드 / 고성희 -->
+	<select id="selectPwd" resultType="java.lang.String" parameterType="java.lang.String">
+		SELECT USER_PWD
+		FROM MEMBER
+		WHERE EMAIL = #{email}
+		AND STATUS = 'N'
+	</select>
+	
+	<!-- 비밀번호 일치 시 회원 정보 조회용 쿼리문 -->
+	<select id="selectLoginUser" resultMap="memberResultSet" parameterType="Member">
+		SELECT *
+		FROM MEMBER
+		WHERE EMAIL = #{email}
+		AND STATUS = 'N'
+	</select>
+	
+	<!-- 닉네임 중복 체크 -->
+	<select id="checkNick" parameterType="Member" resultType="java.lang.Integer">
+    SELECT NVL(COUNT(*),0)
+    FROM MEMBER 
+    WHERE NICKNAME = '${nickname}'
+	</select>
+	
+	<!-- 이메일 중복 체크 -->
+	<select id="checkSame" parameterType="Member" resultType="java.lang.Integer">
+    SELECT NVL(COUNT(*),0)
+    FROM MEMBER 
+    WHERE EMAIL = '${email}'
+	</select>
+
+	<!-- 회원정보 업데이트 -->
+	<update id="updateInfo" parameterType="Member">
+	UPDATE MEMBER
+	SET NICKNAME = '${ nickname }',
+	BIRTHDAY = '${ birthday }',
+	PHONE = '${ phone }'
+	WHERE EMAIL = '${ email }'
+	</update>
+	
+	<!-- 위시리스트 추가 -->
+	<insert id="insertWishlist" parameterType="Movie">
+	INSERT INTO WISHLIST
+	VALUES(WISHLIST_WISHLIST_ID.NEXTVAL, '${ movie_id }', '${ mid }')
+	</insert>
+	
+	<!-- 카카오 로그인 유저 체크 -->
+	<select id="kakaoUserCheck" resultMap="memberResultSet" parameterType="Member">
+		SELECT *
+		FROM MEMBER
+		WHERE EMAIL = #{email}
+		AND STATUS = 'N'
+	</select>
+	
+	<!-- 카카오 새 유저 회원가입 -->
+	<insert id="insertKakaoMember" parameterType="Member">
+		INSERT INTO MEMBER
+		VALUES('M' || MEMBER_MID.NEXTVAL, #{email}, NULL, NULL,
+				NULL, NULL, NULL, 'BUYER', DEFAULT,
+				'KAKAO', 'N', SYSDATE, NULL,
+				#{nickname}, NULL)
+	</insert>
+	
+	<!-- 카카오 기존 유저 로그인 -->
+	<select id="loginKakaoMember" resultMap="memberResultSet" parameterType="Member">
+		SELECT *
+		FROM MEMBER
+		WHERE EMAIL = #{email} 
+		AND STATUS = 'N'
+	</select>
+	
+	
+	<!-- 카카오 유저 추가정보 입력 -->
+	<update id="kakaoUserInfo">
+		UPDATE MEMBER
+		SET USER_NAME = '${user_name}',
+		BIRTHDAY = '${birthday}',
+		GENDER = '${gender}',
+		PHONE = '${phone}',
+		NICKNAME = '${nickname}'
+		WHERE EMAIL = '${email}'
+	</update>
+	
+	<!-- 판매자 등급 변경 -->
+	<update id="updateClass">
+		UPDATE MEMBER
+		SET USER_CLASS = 'SELLER'
+		WHERE EMAIL = '${email}'
+	</update>
+	
+	<!-- 비밀번호 수정 -->
+	<update id="updatePwd">
+		UPDATE MEMBER
+		SET USER_PWD = #{ user_pwd }
+		WHERE EMAIL = #{ email }
+	</update>
+	
+	<!-- 위시리스트 COUNT -->
+	<select id="countWish" resultType="java.lang.Integer" parameterType="Member">
+		SELECT NVL(COUNT(*),0)
+    	FROM WISHLIST
+    	WHERE MID = #{ mid }
+	</select>
+	
+	<!-- 본 영화 COUNT -->
+	<select id="countWatched" resultType="java.lang.Integer" parameterType="Member">
+		SELECT NVL(COUNT(DISTINCT P.APPROVAL_NUMBER),0)
+		FROM RESERVATION R
+		JOIN PAY P ON (R.RESERVATION_ID = P.RESERVATION_ID)
+		WHERE MID = #{ mid }
+    	AND RESERVATION_STATUS != '취소'
+	</select>
+	
+	<!-- 내가 쓴 리뷰 COUNT -->
+	<select id="countReview" resultType="java.lang.Integer" parameterType="Member">
+		SELECT NVL(COUNT(*),0)
+    	FROM REPLY
+    	WHERE RWRITER = #{ mid }
+    	AND STATUS = 'Y'
+	</select>
+	
+	<!-- 이진희 id찾기 -->
+	<select id="findId" resultType="java.lang.String" parameterType="Member">
+		SELECT EMAIL
+    	FROM MEMBER
+    	WHERE USER_NAME = #{ user_name }
+    	AND PHONE = #{phone}
+	</select>
+	
+	<!-- 탈퇴 -->
+	<update id="updateStatus">
+		UPDATE MEMBER
+		SET STATUS = 'Y'
+		WHERE EMAIL = #{ email }
+	</update>
+
+  <!-- 비밀번호 찾기 -->
+	<update id="findPassword">
+		UPDATE MEMBER
+		SET USER_PWD = '${user_pwd}'
+		WHERE EMAIL = '${email}'
+	</update>
+	
+	<!-- Mid 찾기 -->
+	<select id="selectMid" parameterType="String" resultType="String">
+		SELECT MID
+		FROM MEMBER
+		WHERE EMAIL = #{email}
+	</select>
+	
+	<!-- USER가 본 영화 찾기 -->
+	<select id="selectUserMovie" parameterType="String" resultType="String">
+		SELECT M.MOVIE_ID
+		FROM RESERVATION R,SEAT S,TURNING T,PLAY P,MOVIE M
+		WHERE R.SEAT_ID = S.SEAT_ID AND S.TURNING_ID = T.TURNING_ID AND T.PLAY_ID = P.PLAY_ID AND P.MOVIE_ID = M.MOVIE_ID AND R.MID = #{list}
+	</select>
+	
+	
+	<select id="selectAllMid" resultType="String">
+		SELECT MID
+		FROM MEMBER
+	</select>
+	
+	<!-- 추천 영화 검색 -->
+	<select id="selectRecommend" resultType="String" parameterType="String">
+		SELECT BF.ORIGIN_NAME
+		FROM BOARD B,BOARD_FILE BF
+		WHERE B.BOARD_ID = BF.BOARD_ID AND B.MOVIE_ID = #{pmovie}
+	</select>
+	
+	<!-- 추천 영화 제목 -->
+	<select id="selectTitle" resultType="String" parameterType="String">
+		SELECT BTITLE
+		FROM BOARD
+		WHERE MOVIE_ID = #{pmovie}
+	</select>
+</mapper>

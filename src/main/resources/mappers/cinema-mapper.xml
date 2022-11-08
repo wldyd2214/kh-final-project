@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Cinema">
+	<resultMap type="Cinema" id="cinemaResultSet">
+		<id column="THEATER_ID" property="theaterId"/>
+		<result column="MID" property="mid"/>
+		<result column="THEATER_NAME" property="theaterName"/>
+		<result column="THEATER_ROOT" property="theaterRoot"/>
+		<result column="THEATER_TEXT" property="theaterText"/>
+		<result column="THEATER_ADDRESS" property="theater_address"/>
+		<result column="AREA_ID" property="area_id"/>
+		<result column="FILE_SRC" property="file_src"/>
+		<result column="FILE_LEVEL" property="file_level"/>
+		<result column="EDIT_NAME" property="edit_name"/>
+	</resultMap>
+	
+  
+	
+<!-- 정태 영화관(THEATER) 추가하기~!~!~!~!~! -->
+<insert id="insertTheater" parameterType="Cinema">
+		INSERT INTO THEATER VALUES('TT' || TO_CHAR(THEATER_THEATER_ID.NEXTVAL), #{mid},
+		#{theaterName}, #{theaterRoot}, #{theaterText}, #{theaterAddress} ,#{areaId})
+	</insert>
+	<!--  정태 영화관(BOARD) 추가하기 -->
+	<insert id="insertTheaterBoard" parameterType="Cinema">
+	   INSERT INTO BOARD (BOARD_ID, MID, BTITLE, BCONTENT, BOARD_SORT, 
+		BOARD_DATE, MODIFY_DATE, BSTATUS, BCOUNT, CINEMA_DIV, THEATER_ID) 
+		 VALUES ('B' || TO_CHAR(BOARD_BOARD_ID.NEXTVAL), 
+        #{mid}, #{theaterName}, #{theaterText}, 'MC', SYSDATE, SYSDATE, 'Y', '0', 'CINEMA',
+        (SELECT THEATER_ID FROM THEATER WHERE MID = #{mid}))
+	</insert>
+	<!-- 정태 영화관(BOARD_FILE) 추가하기 -->
+	<insert id="insertTheaterBoardFile" parameterType="Cinema">
+	INSERT INTO BOARD_FILE (FILE_ID, BOARD_ID, ORIGIN_NAME, EDIT_NAME, FILE_SRC, FILE_DATE, FILE_LEVEL)
+	VALUES ('BF' || TO_CHAR(BOARD_FILE_FILE_ID.NEXTVAL), #{board_id},
+	  #{origin_name}, #{edit_name}, #{file_src}, SYSDATE, #{file_level})
+	
+	</insert>
+	<select id="selectOneBoardId" resultType="string">
+	
+	SELECT BOARD_BOARD_ID.CURRVAL 
+	FROM DUAL
+	</select>
+	
+	<select id="selectOnePlayPlayId" resultType="string">
+	SELECT PLAY_PLAY_ID.CURRVAL
+	FROM DUAL 
+	</select>
+	  
+<!-- 이진희 영화관 출력 -->
+<select id="selectCinema" parameterType="Cinema" resultMap="cinemaResultSet"> 
+SELECT C.THEATER_ID, C.MID, C.THEATER_NAME,C.THEATER_ROOT, C.THEATER_TEXT, c.THEATER_ADDRESS,C.AREA_ID, EDIT_NAME
+FROM THEATER C, BOARD B, BOARD_FILE BF
+WHERE C.THEATER_ID = B.THEATER_ID
+AND B.BOARD_ID = BF.BOARD_ID
+AND CINEMA_DIV = 'CINEMA'
+AND BF.FILE_LEVEL ='1' 
+</select>
+
+<select id="cinemaDetail" parameterType="Cinema" resultMap="cinemaResultSet">
+ SELECT C.THEATER_ID, C.MID, C.THEATER_NAME,C.THEATER_ROOT, C.THEATER_TEXT, C.THEATER_ADDRESS, C.AREA_ID, BF.FILE_SRC, BF.FILE_LEVEL,BF.EDIT_NAME 
+ FROM THEATER C, BOARD B, BOARD_FILE BF 
+ WHERE C.THEATER_ID = B.THEATER_ID 
+ AND B.BOARD_ID = BF.BOARD_ID 
+ AND C.THEATER_ID = #{id} 
+ AND CINEMA_DIV = 'CINEMA' 
+ AND BF.FILE_LEVEL='1' 
+ </select>
+
+<select id="cinemaea" parameterType="Cinema" resultMap="cinemaResultSet"> 
+SELECT C.THEATER_ID, C.THEATER_NAME, COUNT(C.THEATER_ID) AS EA 
+FROM THEATER C, BOARD B, BOARD_FILE BF, MOVIEROOM MR 
+WHERE C.THEATER_ID = B.THEATER_ID
+AND B.BOARD_ID = BF.BOARD_ID 
+AND C.THEATER_ID = #{id} 
+AND CINEMA_DIV = 'CINEMA' 
+AND MR.THEATER_ID = C.THEATER_ID 
+AND BF.FILE_LEVEL='1' 
+group by C.THEATER_ID, C.THEATER_NAME 
+</select>
+
+<select id="cinemaImageCut" parameterType="Cinema" resultMap="cinemaResultSet">
+SELECT C.THEATER_ID, C.MID, C.THEATER_NAME,C.THEATER_ROOT, C.THEATER_TEXT,SUBSTR(C.THEATER_ADDRESS,INSTR(C.THEATER_ADDRESS,',')+1)AS THEATER_ADDRESS, C.AREA_ID, BF.FILE_SRC, BF.FILE_LEVEL,BF.EDIT_NAME 
+FROM THEATER C, BOARD B, BOARD_FILE BF 
+WHERE C.THEATER_ID = B.THEATER_ID 
+AND B.BOARD_ID = BF.BOARD_ID 
+AND C.THEATER_ID = #{id} 
+AND CINEMA_DIV = 'CINEMA'
+AND BF.FILE_LEVEL='2' 
+</select>
+	
+</mapper>

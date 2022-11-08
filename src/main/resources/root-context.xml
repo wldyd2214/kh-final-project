@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:tx="http://www.springframework.org/schema/tx"
+   xmlns:aop="http://www.springframework.org/schema/aop"
+   xsi:schemaLocation="http://www.springframework.org/schema/beans 
+   http://www.springframework.org/schema/beans/spring-beans.xsd
+   http://www.springframework.org/schema/tx 
+   http://www.springframework.org/schema/tx/spring-tx-4.3.xsd
+   http://www.springframework.org/schema/aop
+   http://www.springframework.org/schema/aop/spring-aop-4.3.xsd">
+   
+   
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg ref="sqlSession"/>
+	</bean>
+		
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="configLocation" value="classpath:mybatis-config.xml"/>  
+		<property name="dataSource" ref="dataSource"/>
+	</bean>     
+	
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
+		<property name="url" value="jdbc:oracle:thin:@127.0.0.1:1521:xe"/>
+		<property name="username" value="dok"/>
+		<property name="password" value="dok"/>
+		<property name="defaultAutoCommit" value="false"/>
+	</bean>
+	
+	
+	<!-- 트랜젝션 매니져 bean등록 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+	
+	<!-- 어노테이션으로 트랙젝션 매니저를 설정하기 위해 추가해야 하는 설정 -->
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+	
+	<!-- 트랜젝션 매니저를 이용해 tx advice(공통적으로 실행할 코드)를 정의한다. -->
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="select*" read-only="true" rollback-for="Exception"/>
+			<tx:method name="insert*" rollback-for="Exception" propagation="REQUIRED" isolation="SERIALIZABLE"/>
+			<tx:method name="update*" rollback-for="Exception" propagation="REQUIRED" isolation="SERIALIZABLE"/>
+			<tx:method name="delete*" rollback-for="Exception" propagation="REQUIRED" isolation="SERIALIZABLE"/>
+		</tx:attributes>
+	</tx:advice>
+	
+	
+	<aop:config proxy-target-class="true">
+		<aop:pointcut id="serviceMethod" expression="execution(* com.kh.dok..*ServiceImpl.*(..))"/>
+		<aop:advisor id="transactionAdvice" pointcut-ref="serviceMethod" advice-ref="txAdvice"/>
+	</aop:config>
+	
+	<!-- 메일보내기 -->
+   <bean id="mailSender" class = "org.springframework.mail.javamail.JavaMailSenderImpl">
+      <property name="host" value="smtp.gmail.com" />
+      <property name="port" value="587" />
+      <property name="username" value="dokdokdokGV@gmail.com" />
+      <property name="password" value="dokdokdok123" />
+      <property name="javaMailProperties">
+         <props>
+               <prop key="mail.transport.protocol">smtp</prop>
+               <prop key="mail.smtp.auth">true</prop>
+               <prop key="mail.smtp.starttls.enable">true</prop>
+               <prop key="mail.debug">true</prop>
+         </props>
+      </property>
+ 
+   </bean>
+	
+	<!-- 파일 업로드 : 소진 -->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="100000000" />
+        <property name="maxInMemorySize" value="100000000" />
+    </bean>
+
+	
+</beans>

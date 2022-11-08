@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Movie">  
+	<resultMap type="Movie" id="movieResultSet">
+		<id property="movie_id" column="MOVIE_ID"/>
+		<result property="movie_title" column="MOVIE_TITLE"/>
+		<result property="movie_etitle" column="MOVIE_ETITLE"/>
+		<result property="movie_content" column="MOVIE_CONTENT"/>
+		<result property="open_date" column="OPEN_DATE"/>
+		<result property="director_name" column="DIRECTOR_NAME"/>
+		<result property="production_com" column="PRODUCTION_COM"/>
+		<result property="movie_age" column="MOVIE_AGE"/>
+		<result property="genre" column="GENRE"/>
+		<result property="running_time" column="RUNNIG_TIME"/>
+	</resultMap>
+	
+	<!-- 박지용 영화 리스트를 ResultSet -->
+	<resultMap type="Movie" id="movieResultSetTwo">
+		<id property="turning_id" column="TURNING_ID"/>
+		<result property="movie_id" column="MOVIE_ID"/>
+		<result property="movie_title" column="MOVIE_TITLE"/>
+		<result property="movie_etitle" column="MOVIE_ETITLE"/>
+		<result property="movie_content" column="MOVIE_CONTENT"/>
+		<result property="open_date" column="OPEN_DATE"/>
+		<result property="director_name" column="DIRECTOR_NAME"/>
+		<result property="production_com" column="PRODUCTION_COM"/>
+		<result property="movie_age" column="MOVIE_AGE"/>
+		<result property="genre" column="GENRE"/>
+		<result property="play_id" column="PLAY_ID"/>
+		<result property="price" column="PRICE"/>
+		<result property="turning_day" column="TURNING_DAY"/>
+		<result property="turning_time" column="TURNING_TIME"/>
+		<result property="movieroom_id" column="MOVIEROOM_ID"/>
+		<result property="play_status" column="PLAY_STATUS"/>
+		<result property="file_src" column="FILE_SRC"/>
+		<result property="edit_name" column="EDIT_NAME"/>
+		
+	</resultMap>
+	
+	<!-- 박지용 상영 리스트를 ResultSet -->
+	<resultMap type="Movie" id="movieResultSetTree">
+		<id property="turning_id" column="TURNING_ID"/>
+		<result property="movie_id" column="MOVIE_ID"/>
+		<result property="movie_title" column="MOVIE_TITLE"/>
+		<result property="movie_etitle" column="MOVIE_ETITLE"/>
+		<result property="movie_content" column="MOVIE_CONTENT"/>
+		<result property="open_date" column="OPEN_DATE"/>
+		<result property="director_name" column="DIRECTOR_NAME"/>
+		<result property="production_com" column="PRODUCTION_COM"/>
+		<result property="movie_age" column="MOVIE_AGE"/>
+		<result property="genre" column="GENRE"/>
+		<result property="play_id" column="PLAY_ID"/>
+		<result property="price" column="PRICE"/>
+		<result property="turning_day" column="TURNING_DAY"/>
+		<result property="turning_time" column="TURNING_TIME"/>
+		<result property="movieroom_id" column="MOVIEROOM_ID"/>
+		<result property="movieroom_name" column="MOVIEROOM_NAME"/>
+		<result property="play_status" column="PLAY_STATUS"/>
+		
+		<result property="area_id" column="AREA_ID"/>
+		<result property="area_name" column="AREA_NAME"/>
+		<result property="area_level" column="AREA_LEVEL"/>
+		<result property="area_parents" column="AREA_PARENTS"/>
+		
+		<result property="theater_id" column="THEATER_ID"/>
+		<result property="theater_name" column="THEATER_NAME"/>
+		
+		<result property="theater_type" column="THEATER_TYPE"/>
+	</resultMap>
+	
+	<!-- 박지용 영화 리스트를 ResultSet -->
+	<resultMap type="Movie" id="movieResultSetFour">
+		<id property="turning_day" column="TURNING_DAY"/>
+	</resultMap>
+	
+	<resultMap type="Movie" id="movieResultSetFive">
+		<id property="pay_count" column="COUNT(*)"/>
+	</resultMap>
+
+	<resultMap type="Movie" id="movieResultSetSix">
+		<id property="reservation_id" column="RESERVATION_ID"/>
+	</resultMap>
+	
+	<resultMap type="Movie" id="movieResultSetSeven">
+		<id property="seat_id" column="SEAT_ID"/>
+		<id property="reservation_id" column="RESERVATION_ID"/>
+		<id property="pay_id" column="PAY_ID"/>
+	</resultMap>
+	
+	<resultMap type="Movie" id="movieResultSetEight">
+		<id property="turning_id" column="TURNING_ID"/>
+		<id property="seat_row" column="SEAT_ROW"/>
+	</resultMap>
+	
+	<!-- 박지용 영화 리스트를 가져오는 쿼리문 -->
+	<select id="selectMovieList" resultMap="movieResultSetTwo" parameterType="Movie">
+		SELECT DISTINCT MOVIE.MOVIE_ID, MOVIE.MOVIE_TITLE, EDIT_NAME, FILE_SRC, BOARD_DATE
+		FROM MOVIE, PLAY, BOARD, BOARD_FILE
+		WHERE MOVIE.MOVIE_ID = PLAY.MOVIE_ID
+		AND MOVIE.MOVIE_ID = BOARD.MOVIE_ID
+		AND BOARD.BOARD_ID = BOARD_FILE.BOARD_ID
+		AND PLAY_STATUS = 'Y'
+		AND FILE_LEVEL = 1
+		ORDER BY BOARD_DATE
+	</select>
+	
+	<!-- 박지용 상영 리스트를 가져오는 쿼리문 -->
+	<select id="selectTurningList" resultMap="movieResultSetTree" parameterType="Movie">
+		SELECT TURNING_ID, PLAY.PLAY_ID, PRICE, TURNING_DAY, 
+        TURNING_TIME, START_TIME, END_TIME, MOVIEROOM.MOVIEROOM_ID, MOVIE.MOVIE_ID, PLAY.PLAY_STATUS, 
+        MOVIE_TITLE, MOVIE_ETITLE, MOVIE_CONTENT, OPEN_DATE, DIRECTOR_NAME, PRODUCTION_COM, MOVIE_AGE, 
+        GENRE, RUNNIG_TIME, MOVIE_ACTOR, MOVIE_TYPE, THEATER.THEATER_ID, MOVIEROOM_NAME, MOVIEROOM_ADDRESS, 
+        MID, THEATER_NAME, THEATER_ROOT, THEATER_TEXT, THEATER_ADDRESS, AREA.AREA_ID, AREA_NAME, AREA_LEVEL, 
+        AREA_PARENTS, TURNING.START_TIME, TURNING.END_TIME, MOVIEROOM.MOVIEROOM_ID, MOVIE.MOVIE_ID 
+		FROM TURNING, PLAY, MOVIE, MOVIEROOM, THEATER, AREA
+		WHERE PLAY.PLAY_ID = TURNING.PLAY_ID 
+		AND MOVIE.MOVIE_ID = PLAY.MOVIE_ID 
+		AND THEATER.THEATER_ID = MOVIEROOM.THEATER_ID
+		AND AREA.AREA_ID = THEATER.AREA_ID
+		AND MOVIEROOM.MOVIEROOM_ID = TURNING.MOVIEROOM_ID
+		AND TURNING_DAY = #{turning_day}
+		AND AREA.AREA_ID = #{area_id}
+		AND MOVIE.MOVIE_ID = #{movie_id}
+		ORDER BY TURNING.START_TIME
+	</select>
+	
+	<!-- 박지용 날짜 리스트를 가져오는 쿼리문 -->
+	<select id="selectDateList" resultMap="movieResultSetFour" parameterType="Movie">
+		SELECT DISTINCT TURNING.TURNING_DAY 
+		FROM TURNING, PLAY, MOVIE, MOVIEROOM, THEATER, AREA
+		WHERE PLAY.PLAY_ID = TURNING.PLAY_ID 
+		AND MOVIE.MOVIE_ID = PLAY.MOVIE_ID 
+		AND THEATER.THEATER_ID = MOVIEROOM.THEATER_ID
+		AND AREA.AREA_ID = THEATER.AREA_ID
+		AND PLAY_STATUS = 'Y'
+		AND AREA.AREA_ID = #{area_id}
+		AND MOVIE.MOVIE_ID = #{movie_id}
+	</select>
+	
+	<!-- 박지용 날짜 리스트를 가져오는 쿼리문 -->
+	<select id="selectPayCount" parameterType="Movie" resultType="_int">
+		SELECT COUNT(*)
+		FROM PLAY, TURNING, SEAT, RESERVATION, PAY
+		WHERE PLAY.PLAY_ID = TURNING.PLAY_ID
+		AND TURNING.TURNING_ID = SEAT.TURNING_ID
+		AND SEAT.SEAT_ID = RESERVATION.SEAT_ID
+		AND RESERVATION.RESERVATION_ID = PAY.RESERVATION_ID
+		AND PAY_STATUS = 'PAY'
+		AND SEAT.MOVIEROOM_ID = #{movieroom_id}
+		AND TURNING.TURNING_ID = #{turning_id}
+	</select>
+	
+	<!-- 박지용 좌석을 예약하는 쿼리문 -->
+	<insert id="insertSeat">
+		INSERT INTO SEAT VALUES('S' || TO_CHAR(SEAT_SEAT_ID.NEXTVAL), #{movieroom_id}, #{turning_id}, #{seat_name}, NULL, '예매중')
+	</insert>
+	
+	<!-- 박지용 좌석 id를 가져오는  쿼리문 -->
+	<select id="selectSeatId" resultType="string">
+		SELECT SEAT_SEAT_ID.CURRVAL 
+		FROM DUAL
+	</select>
+	
+	<!-- 박지용 예매 테이블에 저장하는 쿼리문 -->
+	<insert id="insertReservation">
+		INSERT INTO RESERVATION VALUES('RES' || TO_CHAR(RESERVATION_RESERVATION_ID.NEXTVAL), #{seat_id}, #{mid}, #{price}, SYSDATE, '예매중')
+	</insert>
+	
+	<!-- 박지용 좌석 id를 가져오는  쿼리문 -->
+	<select id="selectPayList" resultMap="movieResultSetSix" parameterType="Movie">
+		SELECT RESERVATION.RESERVATION_ID
+		FROM SEAT, RESERVATION 
+		WHERE SEAT.SEAT_ID = RESERVATION.SEAT_ID 
+		AND MID = #{mid}
+		AND MOVIEROOM_ID = #{movieroom_id} 
+		AND TURNING_ID = #{turning_id}
+		AND SEAT_STATUS = '예매중'
+		ORDER BY SEAT_ROW
+	</select>
+	
+	<!-- 박지용 -->
+	<insert id="insertPay">
+		INSERT INTO PAY VALUES('PA' || TO_CHAR(PAY_PAY_ID.NEXTVAL), #{reservation_id}, 'PAY', 'CARD', #{msg}, NULL, 'N')
+	</insert>
+	
+	<!-- 박지용 -->
+	<update id="updateRes">
+		UPDATE RESERVATION SET RESERVATION_STATUS = '확인' WHERE RESERVATION_ID = #{reservation_id}
+	</update>
+	
+	<!-- 박지용 -->
+	<select id="selectSeatIdTwo" resultType="string">
+		SELECT SEAT_ID FROM RESERVATION WHERE RESERVATION_ID = #{reservation_id}
+	</select>
+	
+	<!-- 박지용 -->
+	<update id="updateSeat">
+		UPDATE SEAT SET SEAT_STATUS = '확인' WHERE SEAT_ID = #{seat_id}
+	</update>
+
+	<!-- 박지용 -->
+	<select id="selectPrimaryKey" resultMap="movieResultSetSeven" parameterType="string">
+		SELECT SEAT.SEAT_ID, RESERVATION.RESERVATION_ID, PAY.PAY_ID
+		FROM SEAT, RESERVATION, PAY
+		WHERE SEAT.SEAT_ID = RESERVATION.SEAT_ID
+		AND RESERVATION.RESERVATION_ID = PAY.RESERVATION_ID
+		AND APPROVAL_NUMBER = #{imp}
+		ORDER BY PAY_ID
+	</select>
+	
+	<!-- 박지용 -->
+	<update id="updateRefundPay" parameterType="string">
+		UPDATE PAY SET PAY_STATUS = 'REFUND', REFUND_STATUS = 'Y' WHERE PAY_ID = #{pay_id}
+	</update>
+	
+	<!-- 박지용 --> 
+	<update id="updateRefundRes" parameterType="string">
+		UPDATE RESERVATION SET RESERVATION_STATUS = '취소' WHERE RESERVATION_ID = #{res_id}
+	</update>
+	
+	<!-- 박지용 -->
+	<update id="updateRefundSeat" parameterType="string">
+		UPDATE SEAT SET SEAT_STATUS = '취소' WHERE SEAT_ID = #{seat_id}
+	</update>
+	
+	
+	<!-- 박지용 -->
+	<select id="selectSeatIdTree" resultMap="movieResultSetEight" parameterType="string">
+		SELECT TURNING_ID, SEAT_ROW 
+		FROM SEAT 
+		WHERE SEAT_ID = #{seat_id}
+	</select>
+
+<!-- 정태 -->
+   <select id="selectMovieTiltle" resultMap="movieResultSet" parameterType="Movie">
+     SELECT MOVIE_TITLE, MOVIE_ID
+       FROM MOVIE
+   </select>
+	
+
+
+</mapper>

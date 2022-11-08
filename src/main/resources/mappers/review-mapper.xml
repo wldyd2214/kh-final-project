@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">  
+    
+<mapper namespace="Review">
+	<resultMap type="Reply" id="ReplySet">
+		<id property="rid" column="RID"/>
+		<result property="bid" column="BID"/>
+		<result property="rwriter" column="RWRITER"/>
+		<result property="rcontent" column="RCONTENT"/>
+		<result property="rcreate_date" column="RCREATE_DATE"/>
+		<result property="rmodify_date" column="RMODIFY_DATE"/>
+		<result property="status" column="STATUS"/>
+		<result property="recommend_count" column="RECOMMEND_COUNT"/>
+		<result property="division" column="DIVISION"/>
+		<result property="theater_id" column="THEATER_ID"/>
+		<result property="movie_id" column="MOVIE_ID"/>  
+		<result property="grade_count" column="GRADE_COUNT"/>
+		<result property="nickname" column="NICKNAME"/>
+	</resultMap>
+	
+	<!-- 무비아이디로 보드아이디 불러오기 -->
+	<select id="selectBid" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT BOARD_ID
+		FROM BOARD
+		WHERE MOVIE_ID = #{movie_id}
+	</select>
+	
+	<!-- 리뷰등록 -->
+	<insert id="addReview" parameterType="Reply">
+		INSERT INTO REPLY
+		VALUES ('R' || REPLY_RID.NEXTVAL, #{bid}, #{rwriter}, #{rcontent}, SYSDATE, NULL, DEFAULT, DEFAULT, NULL, NULL, #{movie_id}, #{grade_count})
+	</insert>
+	
+	<!-- 리뷰리스트 불러오기 -->
+	<select id="selectReview" parameterType="java.lang.String" resultMap="ReplySet">
+		SELECT REPLY.RID, REPLY.BID, REPLY.RWRITER, REPLY.RCONTENT, REPLY.RCREATE_DATE, REPLY.RMODIFY_DATE, REPLY.STATUS, REPLY.RECOMMEND_COUNT, REPLY.DIVISION, REPLY.THEATER_ID, REPLY.MOVIE_ID, REPLY.GRADE_COUNT, MEMBER.NICKNAME
+		FROM REPLY, MEMBER
+		WHERE REPLY.RWRITER = MEMBER.MID
+		AND BID = #{bid}
+		AND REPLY.STATUS = 'Y'
+		 ORDER BY REPLY.RCREATE_DATE DESC
+	</select>
+	
+	<!-- 댓글 좋아요 -->
+	<update id="likeComment">
+	UPDATE REPLY SET RECOMMEND_COUNT = RECOMMEND_COUNT + 1
+	WHERE RID = #{ rid }
+	</update>
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+</mapper>

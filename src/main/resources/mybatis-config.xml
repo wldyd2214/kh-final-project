@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- xml문서의 유효성 체크를 위해 필요한 부분 -->
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">  
+  
+<configuration>
+	<typeAliases>
+		<typeAlias type="com.kh.dok.member.model.vo.Member" alias="Member"></typeAlias>
+		<typeAlias type="com.kh.dok.cinema.model.vo.Cinema" alias="Cinema"></typeAlias>
+		<typeAlias type="com.kh.dok.movie.model.vo.Movie" alias="Movie"></typeAlias>
+		<typeAlias type="com.kh.dok.movie.model.vo.MovieThumbnail" alias="MovieThumbnail"></typeAlias>
+		<typeAlias type="com.kh.dok.area.model.vo.Area" alias="Area"></typeAlias>
+		<typeAlias type="com.kh.dok.admin.model.vo.ReportHistory" alias="ReportHistory"></typeAlias>
+		<typeAlias type="com.kh.dok.board.model.vo.Board" alias="Board"></typeAlias>
+		<typeAlias type="com.kh.dok.board.model.vo.BoardNBoardFile" alias="BoardNBoardFile"></typeAlias>
+		<typeAlias type="com.kh.dok.board.model.vo.BoardFile" alias="BoardFile"></typeAlias>
+		<typeAlias type="com.kh.dok.admin.model.vo.SearchCondition" alias="Search"></typeAlias>
+		<typeAlias type="com.kh.dok.member.model.vo.BookingHistory" alias="BookingHistory"></typeAlias>
+		<typeAlias type="com.kh.dok.licensee.model.vo.MovieRoom" alias="MovieRoom"></typeAlias>
+		<typeAlias type="com.kh.dok.member.model.vo.MyReply" alias="MyReply"></typeAlias>
+		<typeAlias type="com.kh.dok.licensee.model.vo.Play" alias="Play"></typeAlias>
+		<typeAlias type="com.kh.dok.licensee.model.vo.Turning" alias="Turning"></typeAlias>
+		<typeAlias type="com.kh.dok.admin.model.vo.VisitHistory" alias="VisitHistory"></typeAlias>
+		<typeAlias type="com.kh.dok.board.model.vo.SearchCondition1" alias="SearchCondition1"></typeAlias>
+		<typeAlias type="com.kh.dok.review.model.vo.Reply" alias="Reply"></typeAlias>
+	</typeAliases>
+	
+	<mappers>
+		<mapper resource="mappers/member-mapper.xml"/>
+		<mapper resource="mappers/bookingHistory-mapper.xml"/>
+		<mapper resource="mappers/myReply-mapper.xml" />
+		
+		<mapper resource="mappers/cinema-mapper.xml"/>
+
+		<mapper resource="mappers/movieThumbnail-mapper.xml"/>
+		<mapper resource="mappers/movie-mapper.xml"/>
+
+
+		<mapper resource="mappers/admin-mapper.xml"/>
+		<mapper resource="mappers/area-mapper.xml"/>
+
+
+		<mapper resource="mappers/movie-mapper.xml"/>
+		
+		<mapper resource="mappers/board-mapper.xml"/>
+		
+		<mapper resource="mappers/licensee-mapper.xml"/>
+		
+		<mapper resource="mappers/review-mapper.xml" />
+	</mappers>
+</configuration>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

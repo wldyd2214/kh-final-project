@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Licensee">
+
+   <resultMap type="MovieRoom" id="movieRoomResultSet">
+      <id property="movieRoomId" column="MOVIEROOM_ID"/>
+      <result property="theaterId" column="THEATER_ID"/>
+      <result property="movieRoomName" column="MOVIEROOM_NAME"/>
+      <result property="movieRoomAddress" column="MOVIEROOM_ADDRESS"/>
+   
+      <result column="THEATER_ID" property="theaterId"/>
+      <result column="MID" property="mid"/>  
+      <result column="THEATER_NAME" property="theaterName"/>
+      <result column="THEATER_ROOT" property="theaterRoot"/>
+      <result column="THEATER_TEXT" property="theaterText"/>
+      <result column="THEATER_ADDRESS" property="theater_address"/>
+      <result column="AREA_ID" property="area_id"/>
+      <result column="FILE_SRC" property="file_src"/>
+      <result column="FILE_LEVEL" property="file_level"/>
+      <result column="EDIT_NAME" property="edit_name"/>
+   </resultMap>
+       
+   <resultMap type="MovieRoom" id="movieRoomResultSet2">
+      <id property="movie_id" column="MOVIE_ID"/>
+      <result property="movie_title" column="MOVIE_TITLE"/>
+      <result property="movie_etitle" column="MOVIE_ETITLE"/>
+      <result property="movie_content" column="MOVIE_CONTENT"/>
+      <result property="open_date" column="OPEN_DATE"/>
+      <result property="director_name" column="DIRECTOR_NAME"/>
+      <result property="production_com" column="PRODUCTION_COM"/>
+      <result property="movie_age" column="MOVIE_AGE"/>
+      <result property="genre" column="GENRE"/>
+      <result property="running_time" column="RUNNIG_TIME"/>
+   </resultMap>
+   
+      <resultMap type="BoardFile" id="SearchBoardFileSet">
+      <id property="fileId" column="FILE_ID" />
+      <result property="boardId" column="BOARD_ID" />
+      <result property="originName" column="ORIGIN_NAME" />
+      <result property="editName" column="EDIT_NAME" />
+      <result property="fileSrc" column="FILE_SRC" />
+      <result property="fileDate" column="FILE_DATE" />
+      <result property="fileLevel" column="FILE_LEVEL" />
+   </resultMap>
+   
+       <resultMap type="Play" id="PlayResultSet">
+      
+      <id property="playId" column="PLAY_ID"/>
+      <result property="movieId" column="MOVIE_ID"/>
+      <result property="playStatus" column="PLAY_STATUS"/>
+      </resultMap>
+      
+      <resultMap type="Turning" id="TurningResultSet">
+      
+      <id property="turningId" column="TURNING_ID"/>
+      <result property="playId" column="PLAY_ID"/>
+      <result property="price" column="PRICE"/>
+      <result property="turningDay" column="TURNING_DAY"/>
+      <result property="turningTime" column="TURNING_TIME"/>
+      <result property="startTime" column="START_TIME"/>
+      <result property="endTime" column="END_TIME"/>
+      <result property="movieRoomId" column="MOVIEROOM_ID"/>
+      <result property="movieRoomName" column="MOVIEROOM_NAME"/>
+      </resultMap> 
+   
+<!-- 상영관 추가하기~!~!~!~!~! -->
+<insert id="insertMovieRoom" parameterType="MovieRoom">
+      INSERT INTO MOVIEROOM VALUES ('MR' || TO_CHAR(MOVIEROOM_MOVIEROOM_ID.NEXTVAL),
+      (SELECT THEATER_ID FROM THEATER
+      WHERE MID = #{mid}), #{movieRoomName}, #{movieRoomAddress})
+   </insert>
+   
+<!-- movieRoomId 값 가져오기 -->
+<select id="selectIdCheck" resultMap="movieRoomResultSet" parameterType="MovieRoom">
+
+ SELECT MOVIEROOM_ID
+    FROM(SELECT ROWNUM RNUM, MOVIEROOM_ID FROM MOVIEROOM ORDER BY MOVIEROOM_ID DESC)
+    WHERE RNUM=1
+   
+</select>
+   
+   <insert id="insertPlay" parameterType="Play">
+      
+        INSERT INTO PLAY VALUES ('PL' || TO_CHAR(PLAY_PLAY_ID.NEXTVAL),
+      (SELECT MOVIE_ID FROM MOVIE
+      WHERE MOVIE_TITLE = #{movie_title}), DEFAULT)  
+   </insert>
+   
+   
+   <insert id="insertTurning" parameterType="Turning">
+      INSERT INTO "DOK"."TURNING" (TURNING_ID, PLAY_ID, PRICE, TURNING_DAY, TURNING_TIME, START_TIME, END_TIME, MOVIEROOM_ID) 
+      VALUES('TU' || TO_CHAR(TURNING_TURNING_ID.NEXTVAL), #{playId}, #{price}, 
+      TO_DATE(#{turningDay}, 'YYYY-MM-DD HH24:MI:SS'), #{turningTime},
+      TO_DATE(#{startTime_pre}, 'YYYY-MM-DD HH24:MI:SS'),
+      TO_DATE(#{endTime_pre}, 'YYYY-MM-DD HH24:MI:SS'),
+      (SELECT MOVIEROOM_ID FROM MOVIEROOM
+      WHERE MOVIEROOM_NAME = #{movieRoomName}))
+      
+   </insert>
+   <select id="selectOnePlayPlayId" resultType="string">
+   SELECT PLAY_PLAY_ID.CURRVAL
+   FROM DUAL 
+   </select>
+   
+      
+   <!-- 로그인유저의 모든 상영관 id, 이름 가져오기 -->
+   <select id="selectMovieRoomName" resultMap="movieRoomResultSet" parameterType="MovieRoom">
+   SELECT MOVIEROOM_ID, MOVIEROOM_NAME FROM MOVIEROOM MR
+   JOIN THEATER TT ON(MR.THEATER_ID = TT.THEATER_ID)
+    WHERE TT.MID = #{mid}
+   </select>
+   
+   <select id="selectMovieRoomIdId" resultMap="TurningResultSet" parameterType="Turning">
+   SELECT MOVIEROOM_ID FROM MOVIEROOM
+      WHERE MOVIEROOM_NAME = #{movieRoomName}
+      </select>
+
+   <select id="selectOneTurningId" resultType="string">
+   SELECT TURNING_TURNING_ID.CURRVAL FROM DUAL
+   </select>
+</mapper>

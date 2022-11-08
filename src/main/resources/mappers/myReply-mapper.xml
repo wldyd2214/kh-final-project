@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="MyReply">
+	<resultMap type="MyReply" id="myReplyResultSet">
+		<!-- reply 기본 resultSet -->
+		<id property="rid" column="RID" />
+		<result property="bid" column="BID"/>
+		<result property="rwriter" column="RWRITER" />
+		<result property="rcontent" column="RCONTENT" />
+		<result property="rcreate_date" column="RCREATE_DATE" />
+		<result property="rmodify_date" column="RMODIFY_DATE" />
+		<result property="status" column="STATUS" />
+		<result property="recommend_count" column="RECOMMEND_COUNT" />
+		
+		<!-- 내가 쓴 리뷰 조회용 추가 resultSet -->
+		<result property="file_src" column="FILE_SRC" />  
+		<result property="movie_title" column="MOVIE_TITLE" />
+		<result property="grade_count" column="GRADE_COUNT" />
+		<result property="division" column="DIVISION" />
+		<result property="theater_name" column="THEATER_NAME" />
+	</resultMap>
+
+	<!-- 내가 쓴 리뷰 VIEW (영화 리뷰 조회) -->
+	<select id="selectReviews" resultMap="myReplyResultSet">
+	SELECT BF.FILE_SRC, M.MOVIE_TITLE, R.GRADE_COUNT, R.RCONTENT, R.RECOMMEND_COUNT, R.RCREATE_DATE, R.DIVISION, R.RID
+		FROM REPLY R
+		JOIN MOVIE M ON (R.MOVIE_ID = M.MOVIE_ID)
+		JOIN BOARD_FILE BF ON(R.BID = BF.BOARD_ID)
+		WHERE BF.FILE_LEVEL = 1
+		AND R.RWRITER = #{ mid }
+		AND R.STATUS = 'Y'
+	</select>
+	
+	<!-- 내가 쓴 리뷰 VIEW (영화관 리뷰 조회) -->
+	<select id="selectCineRev" resultMap="myReplyResultSet">
+	SELECT TH.THEATER_NAME, R.GRADE_COUNT, R.RCONTENT, R.RECOMMEND_COUNT, R.RCREATE_DATE, R.RID
+    	FROM THEATER TH
+        JOIN BOARD B ON (TH.THEATER_ID = B.THEATER_ID)
+        JOIN REPLY R ON (B.BOARD_ID = R.BID)
+        JOIN MEMBER M ON (R.RWRITER = M.MID)
+    	WHERE R.RWRITER = #{ mid }
+    	AND R.THEATER_ID = TH.THEATER_ID
+		AND R.DIVISION = 'THEATER'
+    	AND B.CINEMA_DIV = 'CINEMA'
+    	AND R.STATUS = 'Y'
+	</select>
+	
+	<!-- 리뷰 삭제 -->
+	<update id="deleteReview">
+	UPDATE REPLY
+	SET STATUS = 'N'
+	WHERE RWRITER = #{ mid }
+	AND RID = #{ rid }
+	</update>
+	
+	<!-- 리뷰 수정 -->
+	<update id="updateReview">
+	UPDATE REPLY
+	SET RCONTENT = #{ rcontent }
+	WHERE RWRITER = #{ mid }
+	AND RID = #{ rid }
+	</update>
+	
+</mapper>

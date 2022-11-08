@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+      
+<mapper namespace="Board">
+	<resultMap type="BoardNBoardFile" id="BBFileResultSet">
+		<id property="board_id" column="BOARD_ID"/>
+		<id property="file_id" column="FILE_ID"/>
+		<result property="mId" column="MID"/>
+		<result property="btitle" column="BTITLE"/>
+		<result property="bcontent" column="BCONTENT"/>
+		<result property="board_sort" column="BOARD_SORT"/>  
+		<result property="board_date" column="BOARD_DATE"/>
+		<result property="modify_date" column="MODIFY_DATE"/>
+		<result property="bstatus" column="BSTATUS"/>
+		<result property="bcount" column="BCOUNT"/>
+		<result property="cinema_div" column="CINEMA_DIV"/>
+		<result property="theater_id" column="THEATER_ID"/>
+		<result property="movie_id" column="MOVIE_ID"/>
+		<result property="board_biv" column="BOARD_DIV"/>
+		<result property="origin_name" column="ORIGIN_NAME"/>
+		<result property="edit_name" column="EDIT_NAME"/>
+		<result property="file_src" column="FILE_SRC"/>
+		<result property="file_date" column="FILE_DATE"/>
+		<result property="file_level" column="FILE_LEVEL"/>
+		<result property="nickname" column="NICKNAME" />
+		<result property="co" column="CO"/>
+	</resultMap>
+	
+	<resultMap type="Reply" id="ReplyResultSet">
+		<id property="rid" column="RID"/>
+		<result property="bid" column="BID"/>
+		<result property="rwriter" column="RWRITER"/>
+		<result property="rcontent" column="RCONTENT"/>
+		<result property="rcreate_date" column="RCREATE_DATE"/>
+		<result property="rmodify_date" column="RMODIFY_DATE"/>
+		<result property="status" column="STATUS"/>
+		<result property="recommend_count" column="RECOMMEND_COUNT"/>
+		<result property="division" column="DIVISION"/>
+		<result property="theater_id" column="THEATER_ID"/>
+		<result property="movie_id" column="MOVIE_ID"/>
+		<result property="grade_count" column="GRADE_COUNT"/>
+		<result property="nickname" column="NICKNAME"/>
+	</resultMap>
+	
+	<resultMap type="BoardFile" id="BoardFileSet">
+		<id property="fileId" column="FILE_ID" />
+		<result property="boardId" column="BOARD_ID" />
+		<result property="originName" column="ORIGIN_NAME" />
+		<result property="editName" column="EDIT_NAME" />
+		<result property="fileSrc" column="FILE_SRC" />
+		<result property="fileDate" column="FILE_DATE" />
+		<result property="fileLevel" column="FILE_LEVEL" />
+	</resultMap>
+	
+	<resultMap type="Cinema" id="cinemaResultSet">
+		<id property="theaterId" column="THEATER_ID"/>
+		<result property="theaterName" column="THEATER_NAME"/>
+	</resultMap>
+	
+	<!-- 공지등록 -->
+	<insert id="insertNotice" parameterType="board">
+		INSERT INTO BOARD
+		VALUES('B' || BOARD_BOARD_ID_SND.NEXTVAL, #{mId}, #{btitle}, #{bcontent}, 'BOARD', 
+				SYSDATE, NULL, 'Y', DEFAULT, NULL, NULL, NULL, 'BD4')
+	</insert>
+	
+	<!-- 공지 boardId 조회 -->
+	<select id="selectBoardId" resultType="java.lang.String" parameterType="java.lang.String">
+		SELECT BOARD_ID
+		FROM (SELECT * 
+      		  FROM BOARD
+	  		  ORDER BY BOARD_DATE DESC)
+		WHERE ROWNUM = 1
+	</select>
+	
+	<!-- 공지 첨부파일 등록 -->
+	<insert id="insertNoticeFile" parameterType="BoardFile">
+		INSERT INTO BOARD_FILE
+		VALUES('BF' || BOARD_FILE_FILE_ID.NEXTVAL, #{board_id}, #{origin_name}, #{edit_name}, #{file_src}, SYSDATE, 1)
+	</insert>
+	
+	<!-- 관리자공지사항 글 불러오기(성희) -->
+	<select id="selectNoticeList" parameterType="java.lang.String" resultMap="BBFileResultSet">
+		SELECT TO_NUMBER(SUBSTR(BOARD.BOARD_ID, 2)) AS BOARD_ID, BOARD.MID, BTITLE, BCONTENT, BOARD_SORT, BOARD_DATE, BCOUNT, 
+       		   FILE_ID, ORIGIN_NAME, EDIT_NAME, FILE_SRC, FILE_DATE, FILE_LEVEL, M.NICKNAME
+		FROM BOARD, BOARD_FILE, MEMBER M
+		WHERE BOARD.BOARD_ID = BOARD_FILE.BOARD_ID(+)
+		AND BOARD.MID = M.MID
+		AND BOARD.MID = #{mId}
+		AND BSTATUS = 'Y'
+		AND BOARD_DIV = 'BD4'
+		ORDER BY BOARD_ID DESC
+	</select>
+	
+	<!-- 마이페이지 - 내 문의 내역 (황이주) -->
+	<select id="selectMyAsk" resultMap="BBFileResultSet">
+		SELECT ROWNUM, BOARD_SORT, BTITLE 
+		FROM BOARD
+		WHERE MID = #{ mid }
+		AND BOARD_SORT = 'BOARD'
+		AND BOARD_DIV IN ('BD1', 'BD2', 'BD3')
+		AND BSTATUS = 'Y'
+	</select>
+	
+	<!-- 공지사항 검색결과 조회(성희) -->
+	<select id="listCount" parameterType="Search" resultType="_int">
+		SELECT COUNT(*)
+		FROM BOARD
+		<choose>
+			<when test="searchCondition != null and searchCondition.equals('btitle')">
+				WHERE BTITLE LIKE '%' || #{searchResult} || '%'
+			</when>
+			<when test="searchCondition != null and searchCondition.equals('bcontent')">
+				WHERE BCONTENT LIKE '%' || #{searchResult} || '%'
+			</when>
+		</choose>
+	</select>
+	
+	<!-- 공지사항 카운트 업데이트(성희) -->
+	<update id="updateCount" parameterType="java.lang.String">
+		UPDATE BOARD
+		SET BCOUNT = (SELECT BCOUNT FROM BOARD WHERE BOARD_ID = 'B' || #{board_id}) + 1
+		WHERE BOARD_ID = 'B' || #{board_id}
+	</update>
+	
+	<!-- 공지사항 상세보기(성희) -->
+	<select id="selectNoticeOne" parameterType="java.lang.String" resultMap="BBFileResultSet">
+		SELECT TO_NUMBER(SUBSTR(BOARD.BOARD_ID, 2)) AS BOARD_ID, BOARD.MID, BTITLE, BCONTENT, BOARD_SORT, BOARD_DATE, BCOUNT, 
+       		   FILE_ID, ORIGIN_NAME, EDIT_NAME, FILE_SRC, FILE_DATE, FILE_LEVEL, M.NICKNAME
+		FROM BOARD, BOARD_FILE, MEMBER M
+		WHERE BOARD.BOARD_ID = BOARD_FILE.BOARD_ID(+)
+		AND BOARD.MID = M.MID
+		AND BOARD.BOARD_ID = 'B' || #{board_id}
+		AND BSTATUS = 'Y'
+		AND BOARD_DIV = 'BD4'
+	</select>
+	
+	<!-- 공지사항 페이징 getListCount(성희) -->
+	<select id="getlistCount" parameterType="java.lang.String" resultType="_int">
+		SELECT COUNT(*)
+		FROM BOARD
+		WHERE BSTATUS = 'Y'
+		AND MID = #{mid}
+	</select>
+	
+	<!-- 공지사항 페이징 한쪽 불러오기(성희) -->
+	<select id="selectNoticeListone" resultMap="BBFileResultSet">
+		SELECT *
+		FROM BOARD
+		WHERE BSTATUS = 'Y'
+		ORDER BY BOARD_ID DESC
+	</select>
+	
+	<!-- 검색 결과 수 조회용 쿼리문 -->
+	<select id="getSearchResultListCount" parameterType="SearchCondition1" resultType="_int">
+		SELECT COUNT(*)
+		FROM BOARD B
+		JOIN MEMBER M ON (B.MID = M.MID)
+		WHERE B.BSTATUS = 'Y'
+		<choose>
+			<when test="btitle != null">
+				AND BTITLE LIKE '%' || #{btitle} || '%'
+			</when>
+			<otherwise>
+				AND BCONTENT LIKE '%' || #{bcontent} || '%'
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 검색결과 리스트 조회용 메소드 -->
+	<select id="selectSearchNoticeList" parameterType="SearchCondition1" resultMap="BBFileResultSet">
+		SELECT TO_NUMBER(SUBSTR(BOARD.BOARD_ID, 2)) AS BOARD_ID, BOARD.MID, BTITLE, BCONTENT, BOARD_SORT, BOARD_DATE, BCOUNT, 
+       		   FILE_ID, ORIGIN_NAME, EDIT_NAME, FILE_SRC, FILE_DATE, FILE_LEVEL, M.NICKNAME
+		FROM BOARD, BOARD_FILE, MEMBER M
+		WHERE BOARD.BOARD_ID = BOARD_FILE.BOARD_ID(+)
+		AND BOARD.MID = M.MID
+		AND BOARD.BSTATUS = 'Y'
+		AND BOARD_DIV = 'BD4'
+		<choose>
+			<when test="btitle != null">
+				AND BTITLE LIKE '%' || #{btitle} || '%'
+			</when>
+			<otherwise>
+				AND BCONTENT LIKE '%' || #{bcontent} || '%'
+			</otherwise>
+		</choose>
+		ORDER BY BOARD_ID DESC
+	</select>
+	
+	<!-- 관리자 문의사항 getInquirelistCount(성희) -->
+	<select id="getInquirelistCount" parameterType="java.lang.String" resultType="_int">    
+		SELECT COUNT(*)
+		FROM BOARD B, THEATER T
+		WHERE T.THEATER_ID = B.THEATER_ID
+		AND B.THEATER_ID = #{TheaterId}
+	</select>
+	
+	<!-- getTheaterId(성희) -->
+	<select id="getTheaterId" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT THEATER_ID
+		FROM THEATER
+		WHERE MID = #{mid}
+	</select>
+	
+	<!-- 관리자 문의사항 제목 10 개 불러오기 (성희) -->
+	<select id="selectINquireList" parameterType="java.lang.String" resultMap="BBFileResultSet">
+		SELECT TO_NUMBER(SUBSTR(BOARD.BOARD_ID, 2)) AS BOARD_ID, BOARD.MID, BTITLE, BCONTENT, BOARD_SORT, BOARD_DATE, BCOUNT, 
+       		   FILE_ID, ORIGIN_NAME, EDIT_NAME, FILE_SRC, FILE_DATE, FILE_LEVEL, M.NICKNAME, CO
+		FROM BOARD, BOARD_FILE, MEMBER M, (SELECT BOARD_ID, COUNT(*) AS CO FROM BOARD B RIGHT JOIN REPLY R ON(B.BOARD_ID=R.BID) GROUP BY BOARD_ID) R
+		WHERE BOARD.BOARD_ID = BOARD_FILE.BOARD_ID(+)
+		AND BOARD.MID = M.MID
+        AND BOARD.BOARD_ID = R.BOARD_ID(+)
+		AND BOARD.THEATER_ID = #{theaterId}
+		AND BSTATUS = 'Y'
+		AND BOARD_DIV = 'BD1'
+		ORDER BY BOARD_ID DESC
+	</select>
+	
+	<!-- 댓글 등록 -->
+	<insert id="addComment" parameterType="Reply">
+		INSERT INTO REPLY
+		VALUES('R' || REPLY_RID.NEXTVAL, 'B' || #{bid}, #{rwriter}, #{rcontent}, SYSDATE, NULL, DEFAULT, DEFAULT, NULL, NULL, NULL, NULL) 
+	</insert>
+	
+	
+	<!-- 댓글리스트 불러오기 -->
+	<select id="selectReply" parameterType="java.lang.String" resultMap="ReplyResultSet">
+		SELECT R.RID, R.BID, R.RWRITER, R.RCONTENT, R.RCREATE_DATE, R.RMODIFY_DATE, R.STATUS, R.RECOMMEND_COUNT, R.DIVISION, R.THEATER_ID, R.MOVIE_ID, R.GRADE_COUNT, M.NICKNAME
+		FROM REPLY R, MEMBER M
+		WHERE R.RWRITER = M.MID
+		AND BID = 'B' || #{bid}
+		AND R.STATUS = 'Y'
+	</select>
+	
+	<!-- 이진희 보드검색 -->
+	<select id="selectBoardone" resultMap="BBFileResultSet" parameterType="BoardNBoardFile">
+		SELECT *
+		 FROM BOARD 
+		 WHERE MOVIE_ID = #{id}
+	 </select>
+	
+	
+	<insert id="insertBoard" parameterType="BoardNBoardFile">
+		INSERT INTO BOARD VALUES('B' || TO_CHAR(BOARD_BOARD_ID.NEXTVAL), #{mid}, #{movie_title}, #{movie_content}
+		,'MC', SYSDATE, SYSDATE,'Y',0,'MOVIE',(null),#{movie_id},(null))
+	</insert>
+	
+	
+	<select id="selectfile" resultMap="BoardFileSet" parameterType="BoardFile">
+		SELECT *
+		 FROM BOARD_FILE
+		 WHERE BOARD_ID = #{id1}
+	 </select>
+	
+	<insert id="insertfile" parameterType="BoardFile">
+		INSERT INTO BOARD_FILE VALUES('BF' || TO_CHAR(BOARD_FILE_FILE_ID.NEXTVAL), #{board_id}, #{origin_name}, #{edit_name}
+		,#{file_src}, SYSDATE, #{file_level})
+	</insert>
+	
+	<!-- 문의사항 상세보기 -->
+	<select id="selectInquireOne" parameterType="java.lang.String" resultMap="BBFileResultSet">
+		SELECT TO_NUMBER(SUBSTR(BOARD.BOARD_ID, 2)) AS BOARD_ID, BOARD.MID, BTITLE, BCONTENT, BOARD_SORT, BOARD_DATE, BCOUNT, 
+       		   FILE_ID, ORIGIN_NAME, EDIT_NAME, FILE_SRC, FILE_DATE, FILE_LEVEL, M.NICKNAME
+		FROM BOARD, BOARD_FILE, MEMBER M
+		WHERE BOARD.BOARD_ID = BOARD_FILE.BOARD_ID(+)
+		AND BOARD.MID = M.MID
+		AND BOARD.BOARD_ID = 'B' || #{board_id}
+		AND BSTATUS = 'Y'
+		AND BOARD_DIV = 'BD1'
+	</select>
+	
+	<!-- 판매자 공지사항 수정(업데이트) -->
+	<update id="updateNotice" parameterType="board">
+		UPDATE BOARD
+		SET BTITLE = #{btitle}, BCONTENT = #{bcontent}, MODIFY_DATE = SYSDATE
+		WHERE BOARD_ID = 'B' || #{board_id}
+	</update>
+	
+	<!-- 판매자 공지사항 파일업데이트 -->
+	<update id="updateNoticeFile" parameterType="BoardFile">
+		UPDATE BOARD_FILE
+        SET ORIGIN_NAME = #{origin_name}, EDIT_NAME = #{edit_name}, FILE_SRC = #{file_src}, FILE_DATE = #{file_date}
+        WHERE BOARD_ID = 'B' || #{board_id}
+	</update>
+	
+	<!-- 문의사항 댓글수 -->
+	<!-- <select id="selectrlist" parameterType="java.lang.String" resultType="_int">
+	
+	</select> -->
+	
+	<!-- 공지사항 삭제 -->
+	<update id="deleteNotice" parameterType="java.lang.String">
+		UPDATE BOARD
+		SET BSTATUS = 'N'
+		WHERE BOARD_ID = 'B' || #{board_id}
+	</update>
+	
+	<!-- 마페 문의사항 insert -->
+	<!-- theater_id, movie_id 추가해야함 bd1도 바꾸기 -->
+	<insert id="insertInquireMp" parameterType="board">
+		INSERT INTO BOARD
+		VALUES('B' || BOARD_BOARD_ID_SND.NEXTVAL, #{mId}, #{btitle}, #{bcontent}, 'BOARD', 
+				SYSDATE, NULL, 'Y', DEFAULT, NULL, #{theater_id}, NULL, 'BD1')
+	</insert>
+	
+	<!-- 마페 문의사항 글 10개 불러오기 -->
+	<select id="selectMpInquireList" parameterType="java.lang.String" resultMap="BBFileResultSet">
+		SELECT TO_NUMBER(SUBSTR(BOARD.BOARD_ID, 2)) AS BOARD_ID, BOARD.MID, BTITLE, BCONTENT, BOARD_SORT, BOARD_DATE, BCOUNT, 
+       		   FILE_ID, ORIGIN_NAME, EDIT_NAME, FILE_SRC, FILE_DATE, FILE_LEVEL, M.NICKNAME
+		FROM BOARD, BOARD_FILE, MEMBER M
+		WHERE BOARD.BOARD_ID = BOARD_FILE.BOARD_ID(+)
+		AND BOARD.MID = M.MID
+		AND BOARD.MID = #{mid}
+		AND BSTATUS = 'Y'
+		AND BOARD_DIV = 'BD1'
+		ORDER BY BOARD_ID DESC
+	</select>
+	
+	<!-- 시네마 리스트 불러오기 -->
+	<select id="cinemaList" resultMap="cinemaResultSet">
+		SELECT *
+		FROM THEATER
+	</select>
+	
+	
+</mapper>
